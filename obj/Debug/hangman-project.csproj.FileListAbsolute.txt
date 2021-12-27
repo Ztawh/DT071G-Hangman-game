@@ -1,0 +1,9 @@
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/bin/Debug/hangman_project.exe
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/bin/Debug/hangman_project.pdb
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/bin/Debug/Generate.exe
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/bin/Debug/LoremNET.dll
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/obj/Debug/hangman-project.csprojAssemblyReference.cache
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/obj/Debug/hangman-project.csproj.CoreCompileInputs.cache
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/obj/Debug/hangman-project.csproj.CopyComplete
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/obj/Debug/hangman_project.exe
+/Users/amanda/Documents/WebbutvecklingMIUN/RiderProjects/hangman-project/obj/Debug/hangman_project.pdb

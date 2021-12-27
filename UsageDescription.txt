@@ -1,0 +1,12 @@
+﻿Generates ScreenObjects based on a control mappings file.
+The control mappings file can be generated with HOOKCHECKER
+
+GENERATE source destination [/C]
+
+    source                   The file path for the mapping file
+    destination              Destination file for screen objects
+
+
+Example to generate screen objects
+
+    GENERATE controls.map screenobjects.cs
