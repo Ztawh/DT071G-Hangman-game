@@ -1,22 +1,29 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+
+/*
+ * Skrivet av Amanda Hwatz Björkholm
+ * Kurs: DT071G - Programmering i C# .NET
+ * Mittuniveristetet 2021
+ */
 
 namespace hangman_project
 {
     class SinglePlayer
     {
         private List<string> _wordList;
+        private List<string> _guesses;
         
         protected string _word;
-        protected List<string> _guesses;
         protected string _wordStatus;
         protected int _tries;
 
         // Konstruktor
         public SinglePlayer()
         {
-            /* Läs ord från textfil och spara i en lista */
+            // Läs ord från textfil och spara i en lista
             try
             {
                 /*Hämta ordlista*/
@@ -30,7 +37,6 @@ namespace hangman_project
                         if (line == "") { continue; }
                         this._wordList.Add(line);
                     }
-
                     sr.Close();
                 }
             }
@@ -39,31 +45,33 @@ namespace hangman_project
                 this._wordList = new List<string>();
             }
             
-            /* Hämta slumpat ord */
+            // Hämta slumpat ord
             int idx = new Random().Next(this._wordList.Count);
             this._word = this._wordList[idx];
 
-            /* Sätt array med gissade bokstäver */
+            // Sätt array med gissade bokstäver
             this._guesses = new List<string>();
             
-            /* Sätt status på ordet */
+            // Sätt status på ordet
             this._wordStatus = "";
-            
+            // Lägg in ett "_" för varje bokstav i ordet
             for (int i = 0; i < this._word.Length; i++)
             {
                 this._wordStatus = this._wordStatus.Insert(0,"_");
             }
 
-            /* Sätt hur många försök */
+            // Sätt hur många försök
             this._tries = 8;
         }
 
-        public void printStatus()
+        // Skriv ut status på ordet, (tex a_a__a)
+        public void PrintStatus()
         {
             Console.WriteLine(this._wordStatus);
         }
 
-        public string guessLetter(string letter, string gameMode)
+        // Kontrollera gissad bokstav
+        public string GuessLetter(string letter, string gameMode)
         {
             string message = "";
             Console.Clear();
@@ -73,8 +81,7 @@ namespace hangman_project
             /* Om bokstav redan gissad */
             if (this._guesses.Contains(letter))
             {
-                 //message = "guessed";
-                 Console.WriteLine($"You have already guessed letter {letter}. Try again.");
+                Console.WriteLine($"You have already guessed letter {letter}. Try again.");
             }
             else if(this._word.Contains(letter))
             {
@@ -147,9 +154,6 @@ namespace hangman_project
                 this._wordStatus = this._wordStatus.Insert(0,"_");
             }
         }
-        
-        
-        
     }
 
     internal static class Program
@@ -169,30 +173,42 @@ namespace hangman_project
             while (true)
             {
                 Console.WriteLine("Secret word:");
-                singlePlayer.printStatus();
+                singlePlayer.PrintStatus();
             
                 Console.WriteLine("Guess a letter");
                 string guess = Console.ReadLine();
-
-                // Skicka gissad bokstav
-                gameStatus = singlePlayer.guessLetter(guess, "Single player");
-
-                if (gameStatus == "winner")
+                
+                // Kontrollera att det endast är ett tecken
+                if (guess.Length < 2)
                 {
-                    Console.WriteLine("YOU WON!");
-                    break;
+
+                    // Skicka gissad bokstav
+                    gameStatus = singlePlayer.GuessLetter(guess, "Single player");
+
+                    if (gameStatus == "winner")
+                    {
+                        Console.WriteLine("YOU WON!");
+                        PrintRedoMenu();
+                        break;
+                    }
+
+                    if (gameStatus.Contains("GAME"))
+                    {
+                        Console.WriteLine(gameStatus);
+                        PrintRedoMenu();
+                        break;
+                    }
                 }
-
-                if (gameStatus.Contains("GAME"))
+                else
                 {
-                    Console.WriteLine(gameStatus);
-                    break;
+                    Console.WriteLine("You can only type one letter.");
                 }
             }
         }
 
         public static void PlayMultiplayer()
         {
+            Console.Clear();
             Console.WriteLine("Hangman | Multiplayer");
             Console.WriteLine();
             Console.WriteLine("Player 1, type a word for player 2 to guess.");
@@ -207,28 +223,113 @@ namespace hangman_project
             
             string gameStatus = "";
             
-            // while (gameStatus != "game over")
             while (true)
             {
                 Console.WriteLine("Secret word:");
-                multiplayer.printStatus();
+                multiplayer.PrintStatus();
             
                 Console.WriteLine("Player 2, guess a letter");
                 string guess = Console.ReadLine();
 
-                // Skicka gissad bokstav
-                gameStatus = multiplayer.guessLetter(guess, "Multiplayer");
-
-                if (gameStatus == "winner")
+                // Kontrollera att det endast är ett tecken
+                if (guess.Length < 2)
                 {
-                    Console.WriteLine("YOU WON!");
-                    break;
+
+                    // Kontrollera inmatad data
+                    // if (!Char.IsLetter(guess, 0))
+                    // {
+                    //     
+                    // }
+
+                    // Skicka gissad bokstav
+                    gameStatus = multiplayer.GuessLetter(guess, "Multiplayer");
+
+                    if (gameStatus == "winner")
+                    {
+                        Console.WriteLine("YOU WON!");
+                        PrintRedoMenu();
+                        break;
+                    }
+
+                    if (gameStatus.Contains("GAME"))
+                    {
+                        Console.WriteLine(gameStatus);
+                        PrintRedoMenu();
+                        break;
+                    }
                 }
-
-                if (gameStatus.Contains("GAME"))
+                else
                 {
-                    Console.WriteLine(gameStatus);
-                    break;
+                    Console.WriteLine("You can only type one letter.");
+                }
+            }
+        }
+
+        public static void PrintMenu()
+        {
+            bool redo = true;
+            Console.Clear();
+            
+            Console.WriteLine("Play a game of Hangman");
+
+            // Loopa menyn tills ett korrekt värde matas in
+            while (redo)
+            {
+                // Meny
+                Console.WriteLine("How do you want to play?");
+                Console.WriteLine();
+                Console.WriteLine("[1] Single player");
+                Console.WriteLine("[2] Multiplayer");
+                Console.WriteLine("[x] Exit Game");
+
+                string menuChoise = Console.ReadLine();
+
+                // Hantera menyval
+                switch (menuChoise)
+                {
+                    case "1" :
+                        PlaySinglePlayer();
+                        redo = false;
+                        break;
+                    case "2":
+                        PlayMultiplayer();
+                        redo = false;
+                        break;
+                    case "x":
+                        Console.WriteLine("Shutting off.");
+                        redo = false;
+                        break;
+                    default:
+                        Console.WriteLine("You can choose 1, 2, or x from the menu.");
+                        break;
+                }
+            }
+        }
+
+        // Skriv ut meny efter avslutad omgång
+        public static void PrintRedoMenu()
+        {
+            bool redo = true;
+            while (redo)
+            {
+                Console.WriteLine("[1] Play again");
+                Console.WriteLine("[x] Exit game");
+                Console.WriteLine();
+                string menuChoise = Console.ReadLine();
+
+                if (menuChoise == "1")
+                {
+                    PrintMenu();
+                    redo = false;
+                }
+                if(menuChoise == "x")
+                {
+                    Console.WriteLine("Shutting off.");
+                    redo = false;
+                }
+                if(menuChoise != "1" && menuChoise != "x")
+                {
+                    Console.WriteLine("You can choose 1 or x from the menu.");
                 }
             }
         }
@@ -237,31 +338,9 @@ namespace hangman_project
         public static void Main(string[] args)
         {
             Console.Clear();
-            Console.WriteLine("Play a game of Hangman");
-            Console.WriteLine();
+            PrintMenu();
             
-            // Meny
-            Console.WriteLine("How do you want to play?");
-            Console.WriteLine("Single player: press 1");
-            Console.WriteLine("Multiplayer: press 2");
-            Console.WriteLine("Exit game: press x");
-
-            string menuChoise = Console.ReadLine();
-
-            // Hantera menyval
-            switch (menuChoise)
-            {
-                case "1" :
-                    PlaySinglePlayer();
-                    break;
-                case "2":
-                    PlayMultiplayer();
-                    break;
-                case "x":
-                    Console.WriteLine("Shutting off.");
-                    break;
-            }
-
+            // FORTSÄTT MED KONTROLL OM BOKSTAV
         }
     }
 }
