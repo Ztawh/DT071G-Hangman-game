@@ -212,15 +212,12 @@ namespace hangman_project
                         {
                             continue;
                         }
-
-
-                        string[] lineArr = line.Split(':');
                         
+                        string[] lineArr = line.Split(':');
                         Highscore readHighscore = new Highscore(lineArr[0], lineArr[1]);
                         
                         // Lägg till varje rad i listan
                         this._highscores.Add(readHighscore);
-                        
                     }
                     sr.Close(); // Stäng streamreader
                 }
@@ -241,8 +238,28 @@ namespace hangman_project
                 Console.WriteLine("HIGHSCORES");
                 Console.WriteLine();
                 // Sortera lista med spelaren med färst felgissningar högst upp
-                IOrderedEnumerable<Highscore> tempList = this._highscores.OrderBy(highscore => highscore.GetFailedAttempts());
-                foreach (var highscore in tempList)
+                IOrderedEnumerable<Highscore> orderedList = this._highscores.OrderBy(highscore => highscore.GetFailedAttempts());
+                this._highscores = orderedList.ToList();
+                if (this._highscores.Count() > 10)
+                {
+                    Console.WriteLine(this._highscores.Count());
+                    
+                    this._highscores.RemoveAt(10);
+
+                    // Spara hela listan på nytt
+                
+                    using (StreamWriter sw = new StreamWriter("highscores.txt"))
+                    {
+                        Console.WriteLine("SAVING");
+                        foreach (var highscore in this._highscores)
+                        {
+                            sw.WriteLine($"{highscore.GetNickname()}:{highscore.GetFailedAttempts()}");
+                        }
+                        
+                        sw.Close();
+                    }
+                }
+                foreach (var highscore in this._highscores)
                 {
                     // int score = Int32.Parse(highscore.GetFailedAttempts());
                     // score = 8 - score;
@@ -257,7 +274,7 @@ namespace hangman_project
             // Lägg till highscore i filen. Om filen inte finns skapas den
             using (StreamWriter sw = new StreamWriter("highscores.txt", true))
             {
-                sw.WriteLine($"{highscore.GetNickname()}: {highscore.GetFailedAttempts()}");
+                sw.WriteLine($"{highscore.GetNickname()}:{highscore.GetFailedAttempts()}");
                 sw.Close();
                 
                 this._highscores.Add(highscore);
