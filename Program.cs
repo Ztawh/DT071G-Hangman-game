@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 /*
  * Skrivet av Amanda Hwatz Björkholm
@@ -19,6 +21,7 @@ namespace hangman_project
         protected string _word;
         protected string _wordStatus;
         protected int _tries;
+        protected int _failedAttempts;
 
         // Konstruktor
         public SinglePlayer()
@@ -62,6 +65,9 @@ namespace hangman_project
 
             // Sätt hur många försök
             this._tries = 8;
+            
+            // Sätt misslyckade gissningar
+            this._failedAttempts = 0;
         }
 
         // Skriv ut status på ordet, (tex a_a__a)
@@ -76,11 +82,12 @@ namespace hangman_project
             string message = "";
             Console.Clear();
             Console.WriteLine($"Hangman | {gameMode}");
-            Console.WriteLine();
+            
             
             /* Om bokstav redan gissad */
             if (this._guesses.Contains(letter))
             {
+                Console.WriteLine();
                 Console.WriteLine($"You have already guessed letter {letter}. Try again.");
             }
             else if(this._word.Contains(letter))
@@ -105,7 +112,8 @@ namespace hangman_project
                         // Kontrollera om hela ordet är gissat
                         if (this._wordStatus == this._word)
                         {
-                            message = "winner";
+                            string fails = this._failedAttempts.ToString();
+                            message = "winner " + fails;
                             Console.WriteLine($"The word was: {this._word}");
                         }
                     }
@@ -118,13 +126,17 @@ namespace hangman_project
                 {
                     // Lägg till bokstav bland gissade bokstäver
                     this._guesses.Add(letter);
+                    // Räkna misslyckad gissning
+                    this._failedAttempts += 1;
                     
-                    string triesLeft = this._tries.ToString();
+                    //string triesLeft = this._tries.ToString();
+                    Console.WriteLine();
                     Console.WriteLine($"Letter '{letter}' is wrong, try again.");
                 }
                 else
                 {
                     message = "GAME OVER. The word was: " + this._word;
+                    
                 }
             }
 
@@ -156,6 +168,103 @@ namespace hangman_project
         }
     }
 
+    class Highscore
+    {
+        private string _nickname;
+        private string _failedAttempts;
+    
+        public Highscore(string nickname, string failedAttempts)
+        {
+            this._nickname = nickname;
+            this._failedAttempts = failedAttempts;
+        }
+
+        public string GetNickname()
+        {
+            return this._nickname;
+        }
+
+        public string GetFailedAttempts()
+        {
+            return this._failedAttempts;
+        }
+    }
+
+    class Highscores
+    {
+        
+        private List<Highscore> _highscores;
+
+        public Highscores()
+        {
+            try
+            {
+                // Hämta hela listan med highscores om filen finns
+                using (StreamReader sr = new StreamReader("highscores.txt"))
+                {
+                    string line = "";
+                    this._highscores = new List<Highscore>();
+
+                    // Loopa igenom alla rader i textfilen
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        if (line == "")
+                        {
+                            continue;
+                        }
+
+
+                        string[] lineArr = line.Split(':');
+                        
+                        Highscore readHighscore = new Highscore(lineArr[0], lineArr[1]);
+                        
+                        // Lägg till varje rad i listan
+                        this._highscores.Add(readHighscore);
+                        
+                    }
+                    sr.Close(); // Stäng streamreader
+                }
+            }
+            catch
+            {
+                this._highscores = new List<Highscore>();
+            }
+        }
+        
+        public void WriteHighscores()
+        {
+            // Skriv ut allt i listan
+            int i = 1;
+            if (this._highscores != null)
+            {
+                Console.Clear();
+                Console.WriteLine("HIGHSCORES");
+                Console.WriteLine();
+                // Sortera lista med spelaren med färst felgissningar högst upp
+                IOrderedEnumerable<Highscore> tempList = this._highscores.OrderBy(highscore => highscore.GetFailedAttempts());
+                foreach (var highscore in tempList)
+                {
+                    // int score = Int32.Parse(highscore.GetFailedAttempts());
+                    // score = 8 - score;
+                    Console.WriteLine($"{i}. {highscore.GetNickname()} - {highscore.GetFailedAttempts()}");
+                    i += 1;
+                } 
+            }
+        }
+
+        public void AddHighscore(Highscore highscore)
+        {
+            // Lägg till highscore i filen. Om filen inte finns skapas den
+            using (StreamWriter sw = new StreamWriter("highscores.txt", true))
+            {
+                sw.WriteLine($"{highscore.GetNickname()}: {highscore.GetFailedAttempts()}");
+                sw.Close();
+                
+                this._highscores.Add(highscore);
+            }
+        }
+    }
+
     internal static class Program
     {
         public static void PlaySinglePlayer()
@@ -169,7 +278,6 @@ namespace hangman_project
 
             string gameStatus = "";
             
-            // while (gameStatus != "game over")
             while (true)
             {
                 Console.WriteLine("Secret word:");
@@ -178,17 +286,17 @@ namespace hangman_project
                 Console.WriteLine("Guess a letter");
                 string guess = Console.ReadLine();
                 
-                // Kontrollera att det endast är ett tecken
-                if (guess.Length < 2)
+                // Kontrollera att det endast är en bokstav och inte null
+                Regex rx = new Regex(@"^[a-zåäö]$");
+                if (guess != null && rx.IsMatch(guess))
                 {
 
                     // Skicka gissad bokstav
                     gameStatus = singlePlayer.GuessLetter(guess, "Single player");
 
-                    if (gameStatus == "winner")
+                    if (gameStatus.Contains("winner"))
                     {
-                        Console.WriteLine("YOU WON!");
-                        PrintRedoMenu();
+                        RegisterHighscore(gameStatus);
                         break;
                     }
 
@@ -201,7 +309,7 @@ namespace hangman_project
                 }
                 else
                 {
-                    Console.WriteLine("You can only type one letter.");
+                    Console.WriteLine("You can only type one (1) letter in lowercase.");
                 }
             }
         }
@@ -213,6 +321,16 @@ namespace hangman_project
             Console.WriteLine();
             Console.WriteLine("Player 1, type a word for player 2 to guess.");
             string word = Console.ReadLine();
+            
+            // Kontrollera att inmatat värde är minst 4 bokstäver
+            Regex rxWord = new Regex(@"^[a-zåäö]{4,}$");
+
+            while (!rxWord.IsMatch(word))
+            {
+                Console.WriteLine("You must type a word with at least 4 letters in lowercase and no symbols or numbers.");
+                Console.WriteLine("Type a word.");
+                word = Console.ReadLine();
+            }
 
             Multiplayer multiplayer = new Multiplayer(word);
             
@@ -231,23 +349,16 @@ namespace hangman_project
                 Console.WriteLine("Player 2, guess a letter");
                 string guess = Console.ReadLine();
 
-                // Kontrollera att det endast är ett tecken
-                if (guess.Length < 2)
+                // Kontrollera att det endast är en bokstav och inte null
+                Regex rx = new Regex(@"^[a-zåäö]$");
+                if (guess != null && rx.IsMatch(guess))
                 {
-
-                    // Kontrollera inmatad data
-                    // if (!Char.IsLetter(guess, 0))
-                    // {
-                    //     
-                    // }
-
                     // Skicka gissad bokstav
                     gameStatus = multiplayer.GuessLetter(guess, "Multiplayer");
 
-                    if (gameStatus == "winner")
+                    if (gameStatus.Contains("winner"))
                     {
-                        Console.WriteLine("YOU WON!");
-                        PrintRedoMenu();
+                        RegisterHighscore(gameStatus);
                         break;
                     }
 
@@ -260,7 +371,86 @@ namespace hangman_project
                 }
                 else
                 {
-                    Console.WriteLine("You can only type one letter.");
+                    Console.WriteLine("You can only type one (1) letter in lowercase.");
+                }
+            }
+        }
+
+        public static void RegisterHighscore(string result)
+        {
+            Console.WriteLine("YOU WON!");
+            bool redo = true;
+            while (redo)
+            {
+                // Meny
+                Console.WriteLine("[r] Register highscore");
+                Console.WriteLine("[x] Don't register highscore");
+                string choise = Console.ReadLine();
+
+                if (choise == "r")
+                {
+                    // LÄGG TILL HIGHSCORE
+                    Console.WriteLine("Enter a nickname");
+                    string nickname = Console.ReadLine();
+                    
+                    // Kontrollera nickname. Minst 3 bokstäver, stora eller små.
+                    Regex rx = new Regex(@"^([A-ZÅÄÖa-zåäö]{3,})$");
+                    if (nickname != null && rx.IsMatch(nickname))
+                    {
+                        // Plocka ut spelresultatet
+                        string[] partsArr = result.Split(' ');
+
+                        Highscore highscore = new Highscore(nickname, partsArr[1]);
+                        Highscores obj = new Highscores();
+                        obj.AddHighscore(highscore);
+                        
+                        redo = false;
+                        
+                        Console.WriteLine("Highscore registered.");
+                        Console.WriteLine();
+                        PrintRedoMenu();
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("You can only type letters in lowercase or uppercase. No symbols allowed.");
+                    }
+                }
+
+                if (choise == "x")
+                {
+                    redo = false;
+                    PrintRedoMenu();
+                }
+
+                if (choise != "r" && choise != "x")
+                {
+                    Console.WriteLine("You can choose r or x from the menu.");
+                }
+            }
+        }
+
+        public static void PrintHighscore()
+        {
+            Highscores obj = new Highscores();
+            obj.WriteHighscores();
+
+            bool redo = true;
+
+            while (redo)
+            {
+                Console.WriteLine();
+                Console.WriteLine("[x] Back to menu");
+                string exit = Console.ReadLine();
+
+                if (exit == "x")
+                {
+                    redo = false;
+                    PrintMenu();
+                }
+                else
+                {
+                    Console.WriteLine("Press x to return to menu");
                 }
             }
         }
@@ -270,7 +460,7 @@ namespace hangman_project
             bool redo = true;
             Console.Clear();
             
-            Console.WriteLine("Play a game of Hangman");
+            Console.WriteLine("HANGMAN");
 
             // Loopa menyn tills ett korrekt värde matas in
             while (redo)
@@ -280,6 +470,7 @@ namespace hangman_project
                 Console.WriteLine();
                 Console.WriteLine("[1] Single player");
                 Console.WriteLine("[2] Multiplayer");
+                Console.WriteLine("[3] View Highscores");
                 Console.WriteLine("[x] Exit Game");
 
                 string menuChoise = Console.ReadLine();
@@ -295,12 +486,16 @@ namespace hangman_project
                         PlayMultiplayer();
                         redo = false;
                         break;
+                    case "3":
+                        PrintHighscore();
+                        redo = false;
+                        break;
                     case "x":
                         Console.WriteLine("Shutting off.");
                         redo = false;
                         break;
                     default:
-                        Console.WriteLine("You can choose 1, 2, or x from the menu.");
+                        Console.WriteLine("You can choose 1, 2, 3, or x from the menu.");
                         break;
                 }
             }
@@ -312,7 +507,7 @@ namespace hangman_project
             bool redo = true;
             while (redo)
             {
-                Console.WriteLine("[1] Play again");
+                Console.WriteLine("[1] Return to menu");
                 Console.WriteLine("[x] Exit game");
                 Console.WriteLine();
                 string menuChoise = Console.ReadLine();
@@ -339,8 +534,6 @@ namespace hangman_project
         {
             Console.Clear();
             PrintMenu();
-            
-            // FORTSÄTT MED KONTROLL OM BOKSTAV
         }
     }
 }

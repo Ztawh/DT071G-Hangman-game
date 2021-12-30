@@ -1,0 +1,13 @@
+nisse: 7
+ztawh: 3
+master: 3
+coolKid: 0
+meee: 1
+frans: 4
+batman: 1
+bjorn: 4
+raggare: 1
+jolly: 2
+AAA: 0
+EEE: 2
+KingPlayer: 2
