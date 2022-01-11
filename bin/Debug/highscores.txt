@@ -1,10 +1,4 @@
 coolKid:0
-OOOO:0
-glue:0
-hajar:0
-nuuuuuu:0
-meee:1
-batman:1
-raggare:1
-what:1
-IdontGetIt:1
+Amanda:1
+MMM:0
+WWW:3
