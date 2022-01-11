@@ -6,3 +6,6 @@ holiday
 nutcracker
 reindeer
 sweater
+snowflake
+skiing
+cozy

@@ -2,3 +2,4 @@ coolKid:0
 Amanda:1
 MMM:0
 WWW:3
+Master:3
