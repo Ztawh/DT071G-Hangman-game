@@ -1,5 +1,9 @@
-coolKid:0
+GOAT:0
+MisterMagister:0
+Leffe:0
+Master:0
 Amanda:1
-MMM:0
-WWW:3
-Master:3
+MaterSensei:1
+CoolKid:2
+Solan:3
+AmandaMaster:5

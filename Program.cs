@@ -98,7 +98,9 @@ namespace hangman_project
             if (this._guesses.Contains(letter))
             {
                 Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"You have already guessed letter {letter}. Try again.");
+                Console.ForegroundColor = ConsoleColor.Blue;
             }
             else if(this._word.Contains(letter))
             {
@@ -140,7 +142,9 @@ namespace hangman_project
                     this._failedAttempts += 1;
                     
                     Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Letter '{letter}' is wrong, try again.");
+                    Console.ForegroundColor = ConsoleColor.Blue;
                 }
                 else
                 {
@@ -250,33 +254,18 @@ namespace hangman_project
             if (this._highscores != null)
             {
                 Console.Clear();
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("HIGHSCORES");
+                Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine();
+                
                 // Sortera lista med spelaren med färst felgissningar högst upp
                 IOrderedEnumerable<Highscore> orderedList = this._highscores.OrderBy(highscore => highscore.GetFailedAttempts());
                 this._highscores = orderedList.ToList();
-                if (this._highscores.Count() > 10)
-                {
-                    Console.WriteLine(this._highscores.Count());
-                    
-                    this._highscores.RemoveAt(10);
-
-                    // Spara hela listan på nytt. Separera namn och spelresultat med :
                 
-                    using (StreamWriter sw = new StreamWriter("highscores.txt"))
-                    {
-                        foreach (var highscore in this._highscores)
-                        {
-                            sw.WriteLine($"{highscore.GetNickname()}:{highscore.GetFailedAttempts()}");
-                        }
-                        sw.Close(); // Stäng streamwriter
-                    }
-                }
                 // Skriv ut hela listan
                 foreach (var highscore in this._highscores)
                 {
-                    // int score = Int32.Parse(highscore.GetFailedAttempts());
-                    // score = 8 - score;
                     Console.WriteLine($"{i}. {highscore.GetNickname()} - {highscore.GetFailedAttempts()} failed attempts");
                     i += 1;
                 } 
@@ -285,13 +274,25 @@ namespace hangman_project
 
         public void AddHighscore(Highscore highscore)
         {
-            // Lägg till highscore i filen. Om filen inte finns skapas den
-            using (StreamWriter sw = new StreamWriter("highscores.txt", true))
+            // Lägg till highscore i listan och sortera
+            this._highscores.Add(highscore);
+            IOrderedEnumerable<Highscore> orderedList = this._highscores.OrderBy(score => score.GetFailedAttempts());
+            this._highscores = orderedList.ToList();
+            
+            // Om det är mer än 10 highscores, ta bort sista
+            if (this._highscores.Count > 10)
             {
-                sw.WriteLine($"{highscore.GetNickname()}:{highscore.GetFailedAttempts()}");
-                sw.Close();
-                
-                this._highscores.Add(highscore);
+                this._highscores.RemoveAt(10);
+            }
+            
+            //Spara hela listan på nytt. Separera namn och spelresultat med :
+            using (StreamWriter sw = new StreamWriter("highscores.txt"))
+            {
+                foreach (var score in this._highscores)
+                {
+                    sw.WriteLine($"{score.GetNickname()}:{score.GetFailedAttempts()}");
+                }
+                sw.Close(); // Stäng streamwriter
             }
         }
     }
@@ -323,7 +324,6 @@ namespace hangman_project
                 Regex rx = new Regex(@"^[a-zåäö]$");
                 if (guess != null && rx.IsMatch(guess))
                 {
-
                     // Skicka gissad bokstav samt om multi- eller single player
                     gameStatus = singlePlayer.GuessLetter(guess, "Single player");
 
@@ -348,9 +348,11 @@ namespace hangman_project
                     Console.Clear();
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine("Hangman | Single player");
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("You can only type one (1) letter in lowercase.");
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine();
-                    Console.WriteLine("You can only type one (1) letter in lowercase.");
                 }
             }
         }
@@ -373,7 +375,9 @@ namespace hangman_project
             // Om inmatat värde inte matchar regex, be om ord tills det är korrekt
             while (!rxWord.IsMatch(word))
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("You must type a word with at least 4 letters in lowercase and no symbols or numbers.");
+                Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine();
                 Console.WriteLine("Type a word.");
                 word = Console.ReadLine();
@@ -426,9 +430,11 @@ namespace hangman_project
                     Console.Clear();
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine("Hangman | Multiplayer");
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("You can only type one (1) letter in lowercase.");
                     Console.ForegroundColor = ConsoleColor.Blue;
                     Console.WriteLine();
-                    Console.WriteLine("You can only type one (1) letter in lowercase.");
                 }
             }
         }
@@ -474,9 +480,10 @@ namespace hangman_project
                     }
                     else // Om regex inte matchar
                     {
-                        // Om regex inte matchar
                         Console.Clear();
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("You can only type letters in lowercase or uppercase. No symbols allowed.");
+                        Console.ForegroundColor = ConsoleColor.Blue;
                     }
                 }
 
@@ -494,7 +501,9 @@ namespace hangman_project
                 // Om användare matar in annat än r eller x
                 if (choise != "r" && choise != "x")
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("You can choose r or x from the menu.");
+                    Console.ForegroundColor = ConsoleColor.Blue;
                 }
             }
         }
@@ -520,7 +529,9 @@ namespace hangman_project
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Press x to return to menu");
+                    Console.ForegroundColor = ConsoleColor.Blue;
                 }
             }
         }
@@ -534,7 +545,6 @@ namespace hangman_project
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("HANGMAN");
             Console.ForegroundColor = ConsoleColor.Blue;
-            
 
             // Loopa menyn tills ett korrekt värde matas in
             while (redo)
@@ -570,7 +580,9 @@ namespace hangman_project
                         redo = false;
                         break;
                     default:
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine("You can choose 1, 2, 3, or x from the menu.");
+                        Console.ForegroundColor = ConsoleColor.Blue;
                         break;
                 }
             }
@@ -600,7 +612,9 @@ namespace hangman_project
                 }
                 if(menuChoise != "1" && menuChoise != "x")
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("You can choose 1 or x from the menu.");
+                    Console.ForegroundColor = ConsoleColor.Blue;
                 }
             }
         }
